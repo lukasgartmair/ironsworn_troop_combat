@@ -9,6 +9,9 @@ Created on Sat Jan 18 20:21:28 2025
 import numpy as np
 import random
 
+def get_rnd_stat():
+    return random.randint(1, 3)
+
 def clip(x):
     return np.clip(x,0, 10)
 

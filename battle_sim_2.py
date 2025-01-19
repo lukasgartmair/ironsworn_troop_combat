@@ -6,15 +6,21 @@ Created on Fri Jan 17 17:33:38 2025
 @author: lukasgartmair
 """
 
-from utils import d10, d6, determine_outcome, split_modifiers, clip
+from utils import d10, d6, determine_outcome, split_modifiers, clip, get_rnd_stat
 import matplotlib.pyplot as plt
 import random
 import numpy as np    
 import pandas as pd
 
 def apply_ability_mod(x):
-    return abs(x//2)
+#TODO diff 4 not possible  
+    x=abs(x)
+    if 0 <= x < 2:
+        return 0
+    elif 2 <= x < 4:
+        return 1
 
+    
 outcomes = {0:'miss', 1:'weak_hit', 2:'strong_hit'}
 
 attacker_stats = {
@@ -33,13 +39,14 @@ defender_stats = {
     "shadow": 3
 }
 
-balancing_weights = [5,10,60,10,15]
+#balancing_weights = [5,10,60,10,15]
+balancing_weights = [20,20,20,20,20]
 advantage_dict = {
-    'outnumbered': -2,
-    'lower numbers': -1,
+    'attacker outnumbered': -2,
+    'attacker lower numbers': -1,
     'equal numbers': 0,
-    'slight numbers advantage': 1,
-    'great numbers advantage': 2
+    'attacker slight numbers advantage': 1,
+    'attacker great numbers advantage': 2
 }
 
 relevant_attributes = {
@@ -102,10 +109,12 @@ def calculate_output(move_tuple=(None, None,None,None)):
             attribute_mod = 0
             
             attacker_attribute = relevant_attributes[results[0]]
-            attacker_ability = attacker_stats[attacker_attribute]
+            #attacker_ability = attacker_stats[attacker_attribute]
+            attacker_ability = get_rnd_stat()
             attacker_units = results[0]
             defender_attribute = relevant_attributes[results[1]]
-            defender_ability = defender_stats[defender_attribute]
+            #defender_ability = defender_stats[defender_attribute]
+            defender_ability = get_rnd_stat()
             defender_units = results[1]
             attribute_mod = apply_ability_mod(attacker_ability - defender_ability)
             
@@ -142,7 +151,7 @@ def calculate_output(move_tuple=(None, None,None,None)):
             data = player_role, attacker_units, defender_units, results[2],results[3], attribute_mod, mods_total, original_challenge_dice, original_action_die, challenge_dice, action_die, outcomes[outcome_numeric], outcome_numeric
             return data, outcome_numeric
 
-iterations = 1000
+iterations = 10000
 
 results = []
 hists = []
@@ -152,24 +161,33 @@ for i in range(iterations):
     
     results.append(data)
             
-columns = ['role', 'attacker', 'defender', 'combat_style','number_advantage','ability_modifier','total_modifier','original_challende_challenge_dice','original_action_die', 'modifie_challenge_dice','modified_action_dice','outcome_str','outcome_numeric']
+columns = ['role', 'attacker', 'defender', 'combat_style','numbers_attacker','ability_modifier','total_modifier','original_challende_challenge_dice','original_action_die', 'modifie_challenge_dice','modified_action_dice','outcome_str','outcome_numeric']
 df = pd.DataFrame(results,columns=columns)
 
-grouped = df.groupby(['attacker', 'defender', 'combat_style','number_advantage'])['outcome_numeric']
+grouped = df.groupby(['role','attacker', 'defender', 'combat_style','numbers_attacker','ability_modifier'])['outcome_numeric']
 
 # Initialize a list to store results
 hist_data = []
 
 # Calculate histogram percentages for each group
 for name, group in grouped:
-    hist, _ = np.histogram(group, bins=np.arange(0, 4), density=True)  # Normalize with density=True
-    hist_data.append((name, hist * 100))  # Convert to percentages
+    hist, _ = np.histogram(group, bins=np.arange(0, 4), density=False)  
+    sum_occurences = np.sum(hist)
+    hist, _ = np.histogram(group, bins=np.arange(0, 4), density=True)  
+    hist_data.append((name, hist * 100,sum_occurences))
 
 # Convert results to a new DataFrame
-hist_df = pd.DataFrame(hist_data, columns=["Group", "Percentages"])
+hist_df = pd.DataFrame(hist_data, columns=["Group", "Percentages",'n_Occurences'])
 
+group_columns = ['role','attacker', 'defender', 'combat_style','numbers_attacker','ability_modifier']
+hist_df[group_columns] = pd.DataFrame(hist_df['Group'].tolist(), index=hist_df.index)
 # Expand the 'Percentages' column into separate columns
 percentage_columns = ['Miss_Percentage', 'Weak_Hit_Percentage', 'Strong_Hit_Percentage']
-df[percentage_columns] = pd.DataFrame(hist_df['Percentages'].tolist(), index=hist_df.index)
-
-df = df.sort_values(by=['attacker', 'defender','combat_style'])
+hist_df[percentage_columns] = pd.DataFrame(hist_df['Percentages'].tolist(), index=hist_df.index)
+# Drop the original 'Group' and 'Percentages' columns
+hist_df = hist_df.drop(columns=['Group', 'Percentages'])
+hist_df['numbers_attacker_numeric'] = hist_df["numbers_attacker"].map(advantage_dict)
+hist_df = hist_df.sort_values(by=['attacker', 'defender','combat_style','role','numbers_attacker_numeric'])
+hist_df.drop(['numbers_attacker_numeric'], axis=1, inplace=True)
+hist_df = hist_df[[col for col in hist_df if col != 'n_Occurences'] + ['n_Occurences']]
+hist_df = hist_df.reset_index()
