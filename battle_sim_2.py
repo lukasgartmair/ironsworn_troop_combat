@@ -73,16 +73,6 @@ combat_style = ["close_combat","ranged_combat"]
 roles = ["attacker", "defender"]
 
 unit_types = {0:'skirmishers', 1:'warriors', 2:'archers', 3:'cavalry'}
-
-class Troup:
-    def __init__(self):
-        unit_type = None
-        number_of_units = 0
-    
-    
-class ArmyComposition:
-    def __init__(self):
-        troups = {}
         
 def rnd_move():
     return (random.choice(list(unit_types.values())), random.choice(list(unit_types.values())), random.choices(combat_style, weights=ws)[0],random.choices(list(advantage_dict), weights=balancing_weights, k=1)[0])
@@ -94,6 +84,8 @@ def calculate_output(move_tuple=(None, None,None,None)):
     
     combat_mod = None
     
+    #this loop accounts for the fact that warriors can not attack archers in ranged combat. 
+    #it will loop until anything valid is found
     while combat_mod is None:
     
         results = rnd_move()    
@@ -151,7 +143,7 @@ def calculate_output(move_tuple=(None, None,None,None)):
             data = player_role, attacker_units, defender_units, results[2],results[3], attribute_mod, mods_total, original_challenge_dice, original_action_die, challenge_dice, action_die, outcomes[outcome_numeric], outcome_numeric
             return data, outcome_numeric
 
-iterations = 10000
+iterations = 100000
 
 results = []
 hists = []
@@ -166,28 +158,26 @@ df = pd.DataFrame(results,columns=columns)
 
 grouped = df.groupby(['role','attacker', 'defender', 'combat_style','numbers_attacker','ability_modifier'])['outcome_numeric']
 
-# Initialize a list to store results
 hist_data = []
 
-# Calculate histogram percentages for each group
 for name, group in grouped:
     hist, _ = np.histogram(group, bins=np.arange(0, 4), density=False)  
     sum_occurences = np.sum(hist)
     hist, _ = np.histogram(group, bins=np.arange(0, 4), density=True)  
     hist_data.append((name, hist * 100,sum_occurences))
 
-# Convert results to a new DataFrame
 hist_df = pd.DataFrame(hist_data, columns=["Group", "Percentages",'n_Occurences'])
 
 group_columns = ['role','attacker', 'defender', 'combat_style','numbers_attacker','ability_modifier']
 hist_df[group_columns] = pd.DataFrame(hist_df['Group'].tolist(), index=hist_df.index)
-# Expand the 'Percentages' column into separate columns
 percentage_columns = ['Miss_Percentage', 'Weak_Hit_Percentage', 'Strong_Hit_Percentage']
 hist_df[percentage_columns] = pd.DataFrame(hist_df['Percentages'].tolist(), index=hist_df.index)
-# Drop the original 'Group' and 'Percentages' columns
 hist_df = hist_df.drop(columns=['Group', 'Percentages'])
 hist_df['numbers_attacker_numeric'] = hist_df["numbers_attacker"].map(advantage_dict)
 hist_df = hist_df.sort_values(by=['attacker', 'defender','combat_style','role','numbers_attacker_numeric'])
 hist_df.drop(['numbers_attacker_numeric'], axis=1, inplace=True)
 hist_df = hist_df[[col for col in hist_df if col != 'n_Occurences'] + ['n_Occurences']]
 hist_df = hist_df.reset_index()
+hist_df.drop(['index'], axis=1, inplace=True)
+
+subset_df = hist_df.loc[380:399]

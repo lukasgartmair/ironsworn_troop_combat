@@ -57,12 +57,10 @@ def simulate():
             
             
     df = pd.DataFrame(hists)
-    # Expand the last column into separate columns
     expanded_cols = pd.DataFrame(df[2].tolist(), columns=["miss", "weak_hit", "strong_hit"])
     
     for xy in range(3):
         fig, ax = plt.subplots()
-        # Concatenate the expanded columns with the original DataFrame
         df_tmp = pd.concat([df.drop(columns=[2]), expanded_cols], axis=1).iloc[::-1]
         heatmap_data = df_tmp.pivot(index=1, columns=0, values=outcomes[xy])
         sns.heatmap(heatmap_data, annot=True, fmt=".2f",cmap="coolwarm_r")
