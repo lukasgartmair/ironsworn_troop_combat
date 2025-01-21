@@ -20,9 +20,15 @@ def clip(x):
 
 def split_modifiers(v):
 
+    v = abs(v)
     v1 = v // 2 + v % 2
     v2 = v // 2
     return v1, v2
+
+def apply_modifier_to_inverse_challenge_dice(d1, d2, v1, v2):
+    
+    return max(v1,v2) + min(d1,d2), min(v1,v2) + max(v1,v2)
+
 
 
 def determine_outcome(a, b, res):

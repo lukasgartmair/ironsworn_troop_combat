@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 21 16:40:48 2025
+Created on Tue Jan 21 20:37:24 2025
 
 @author: lukasgartmair
 """
@@ -10,11 +10,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from utils import d10, d6, determine_outcome, split_modifiers
-
+from utils import d10, d6, determine_outcome, split_modifiers, apply_modifier_to_inverse_challenge_dice
 
 #def simulate():
-n = 50000
+n = 200000
 data = []
 results = []
 hists = []
@@ -23,29 +22,34 @@ values = list(range(-4, 7))
 outcomes = {0: "miss", 1: "weak_hit", 2: "strong_hit"}
 outcome_order = {"miss": 0, "weak_hit": 1, "strong_hit": 2}
 
-cases = {0: "Act_Die", 1: "Ch_Die_1", 2: "Ch_Die_2", 3: "Split"}
+cases = {0: "Act_Die", 1: "Ch_Die_1", 2: "Ch_Die_2", 3: "Split",4:"Split"}
 
 # for j in range(4):
-for j in [0, 3]:
+for j in [0, 4]:
     for v in values:
         for i in range(n):
 
             x = d6()
             a = d10()
             b = d10()
+            
+            apply_modifier_to_inverse_challenge_dice
 
             if j == 0:
                 x = x + v
-            elif j == 1:
-                a = a + v
-            elif j == 2:
-                b = b + v
-            elif j == 3:
-                v1 = v // 2 + v % 2
-                v2 = v // 2
+            elif j == 4:
+                v1, v2 = split_modifiers(v)
+                a,b = apply_modifier_to_inverse_challenge_dice(a, b, v1, v2)
+            # elif j == 1:
+            #     a = a + v
+            # elif j == 2:
+            #     b = b + v
+            # elif j == 3:
+            #     v1 = v // 2 + v % 2
+            #     v2 = v // 2
 
-                a = a + v1
-                b = b + v2
+            #     a = a + v1
+            #     b = b + v2
 
             result = determine_outcome(a, b, x)
 
@@ -182,12 +186,12 @@ sorted_df = df.sort_values(by=["miss_rank", "strong_hit_rank", "weak_hit_rank"])
 )
 
 sorted_df["Action Die"] = np.nan
-sorted_df["Challenge Die 1"] = np.nan
-sorted_df["Challenge Die 2"] = np.nan
+sorted_df["Lower Challenge Die"] = np.nan
+sorted_df["Higher Challenge Die"] = np.nan
 
 sorted_df.loc[sorted_df['modified die'] == 'Action Die', 'Action Die'] = sorted_df['modificator']
 
 vectorized_split = np.vectorize(split_modifiers)
-sorted_df.loc[sorted_df['modified die'] == 'Challenge Dice', ['Challenge Die 1', 'Challenge Die 2']] = \
+sorted_df.loc[sorted_df['modified die'] == 'Challenge Dice', ['Lower Challenge Die', 'Higher Challenge Die']] = \
     list(zip(*vectorized_split(sorted_df.loc[sorted_df['modified die'] == 'Challenge Dice', 'modificator'])))
 sorted_df.drop(["modified die", "modificator"], axis=1, inplace=True)
