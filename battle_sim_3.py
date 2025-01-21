@@ -6,14 +6,6 @@ Created on Sun Jan 19 10:47:46 2025
 @author: lukasgartmair
 """
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jan 17 17:33:38 2025
-
-@author: lukasgartmair
-"""
-
 from utils import d10, d6, determine_outcome, split_modifiers, clip, get_rnd_stat
 import matplotlib.pyplot as plt
 import random
