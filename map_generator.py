@@ -13,18 +13,52 @@ from scipy.spatial import Voronoi
 from noise import pnoise2
 from scipy.ndimage import binary_dilation, gaussian_filter
 import string
+from faker import Faker
+from scipy.stats import qmc
+
+f = Faker()
+
+def add_random_points(map_grid, x_range, y_range, n=2):
+    
+    n = random.randint(2,10)
+    
+    num_points = 100
+    sampler = qmc.Halton(d=2, scramble=False)
+    points = sampler.random(num_points)
+    
+    points = np.floor(points * map_size).astype(int)
+    
+    num_points = 100
+    sampler = qmc.Halton(d=2, scramble=False)
+    points = sampler.random(num_points)
+    points = np.floor(points * map_size).astype(int)
+    mask2 = map_grid[points[:, 0], points[:, 1]] != terrain_mapping["Water"]
+    valid_points = points[mask2]
+    
+    n = random.randint(2, 10)
+    if valid_points.shape[0] < n:
+        raise ValueError(f"Not enough valid points found. Only {valid_points.shape[0]} valid points.")
+
+
+    random_rows = valid_points[np.random.choice(valid_points.shape[0], n, replace=False)]
+    
+    for x,y in random_rows:
+        name = f.city()
+        plt.scatter(x, y, label=name)
+        plt.text(x, y, name, fontsize=12, ha='right', va='bottom')
 
 terrain_strategies = {
-    "Deep Water": {"water_threshold": 0.2, "mountain_threshold": None},
-    "Shallow Water": {"water_threshold": 0.4, "mountain_threshold": None},
-    "Flat Land": {"water_threshold": 0.5, "mountain_threshold": 0.3},
-    "Plains": {"water_threshold": None, "mountain_threshold": 0.4},
-    "Hills": {"water_threshold": None, "mountain_threshold": 0.6},
-    "Swamp": {"water_threshold": 0.45, "mountain_threshold": 0.35},
-    "Rocky Terrain": {"water_threshold": None, "mountain_threshold": 0.75},
-    "Mountains": {"water_threshold": None, "mountain_threshold": 0.9},
-    "Snowy Peaks": {"water_threshold": None, "mountain_threshold": 0.95},
-    "Volcanic Rock": {"water_threshold": None, "mountain_threshold": 0.85},
+    # "Deep Water": {"water_threshold": 0.2, "mountain_threshold": None},
+    # "Shallow Water": {"water_threshold": 0.4, "mountain_threshold": None},
+    # "Flat Land": {"water_threshold": 0.5, "mountain_threshold": 0.3},
+    # "Plains": {"water_threshold": None, "mountain_threshold": 0.4},
+    # "Hills": {"water_threshold": None, "mountain_threshold": 0.6},
+    # "Swamp": {"water_threshold": 0.45, "mountain_threshold": 0.35},
+    # "Rocky Terrain": {"water_threshold": None, "mountain_threshold": 0.75},
+    # "Mountains": {"water_threshold": None, "mountain_threshold": 0.9},
+    "Lakes": {"water_threshold": 0.6, "mountain_threshold": 0.65},
+    # "Snowy Peaks": {"water_threshold": None, "mountain_threshold": 0.95},
+    # "Volcanic Rock": {"water_threshold": None, "mountain_threshold": 0.85},
 }
 
 terrain_strategy = random.choice(list(terrain_strategies))
@@ -141,5 +175,6 @@ plt.tick_params(
 plt.tick_params(
     axis="y", labelsize=10, labelrotation=0, direction="inout", length=6, width=1
 )
+add_random_points(map_grid, width, height)
 
 plt.show()
