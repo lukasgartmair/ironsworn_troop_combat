@@ -77,29 +77,29 @@ def simulate():
     import pandas as pd
     import seaborn as sns
     import matplotlib.pyplot as plt
-    
+
     outcomes = {0: "miss", 1: "weak_hit", 2: "strong_hit"}
-    
+
     # Create DataFrame
     df = pd.DataFrame(hists)
     expanded_cols = pd.DataFrame(
         df[2].tolist(), columns=["miss", "weak_hit", "strong_hit"]
     )
-    
+
     # Combine Data
     df_tmp = pd.concat([df.drop(columns=[2]), expanded_cols], axis=1).iloc[::-1]
     # melted_df = df_tmp.melt(
-    #     id_vars=[0, 1], 
+    #     id_vars=[0, 1],
     #     value_vars=["miss", "weak_hit", "strong_hit"],
     #     var_name="Outcome",
     #     value_name="prob"
     # )
-    
+
     # # Create Pivot Table for Heatmap
     # heatmap_data = melted_df.pivot_table(
     #     index=1, columns=["Outcome", 0], values="prob"
     # )
-    
+
     # # Plot Heatmap
     # fig,ax = plt.subplots(figsize=(12, 12))
     # sns.heatmap(
@@ -110,21 +110,25 @@ def simulate():
     # plt.ylabel("Modification Value")
     # ax.tick_params(axis='x', rotation=45)
     # plt.show()
-    
+
     melted_df = df_tmp.melt(
-        id_vars=[0, 1], 
+        id_vars=[0, 1],
         value_vars=["miss", "weak_hit", "strong_hit"],
         var_name="Outcome",
-        value_name="prob"
+        value_name="prob",
     )
 
-    melted_df["Case_Outcome"] = melted_df["Outcome"] + " (" + melted_df[0].astype(str) + ")"
-    
+    melted_df["Case_Outcome"] = (
+        melted_df["Outcome"] + " (" + melted_df[0].astype(str) + ")"
+    )
+
     outcome_order = {"miss": 0, "weak_hit": 1, "strong_hit": 2}
     melted_df["Outcome_Num"] = melted_df["Outcome"].map(outcome_order)
 
-    melted_df["Case_Outcome"] = melted_df["Outcome"] + " (" + melted_df[0].astype(str) + ")"
-    
+    melted_df["Case_Outcome"] = (
+        melted_df["Outcome"] + " (" + melted_df[0].astype(str) + ")"
+    )
+
     heatmap_data = melted_df.pivot(index=1, columns="Case_Outcome", values="prob")
     heatmap_data = heatmap_data.round()
     plt.figure(figsize=(12, 8))
@@ -135,7 +139,7 @@ def simulate():
     plt.xlabel("Case and Outcome")
     plt.ylabel("Modification Value")
     ax.invert_yaxis()
-    plt.xticks(rotation=25, ha='right')
+    plt.xticks(rotation=25, ha="right")
     plt.show()
 
 

@@ -13,7 +13,7 @@ import seaborn as sns
 from utils import d10, d6, determine_outcome
 
 
-#def simulate():
+# def simulate():
 n = 100
 data = []
 results = []
@@ -83,14 +83,12 @@ outcomes = {0: "miss", 1: "weak_hit", 2: "strong_hit"}
 
 # Create DataFrame
 df = pd.DataFrame(hists)
-expanded_cols = pd.DataFrame(
-    df[2].tolist(), columns=["miss", "weak_hit", "strong_hit"]
-)
+expanded_cols = pd.DataFrame(df[2].tolist(), columns=["miss", "weak_hit", "strong_hit"])
 
 # Combine Data
 df_tmp = pd.concat([df.drop(columns=[2]), expanded_cols], axis=1).iloc[::-1]
 # melted_df = df_tmp.melt(
-#     id_vars=[0, 1], 
+#     id_vars=[0, 1],
 #     value_vars=["miss", "weak_hit", "strong_hit"],
 #     var_name="Outcome",
 #     value_name="prob"
@@ -113,10 +111,10 @@ df_tmp = pd.concat([df.drop(columns=[2]), expanded_cols], axis=1).iloc[::-1]
 # plt.show()
 
 melted_df = df_tmp.melt(
-    id_vars=[0, 1], 
+    id_vars=[0, 1],
     value_vars=["miss", "weak_hit", "strong_hit"],
     var_name="Outcome",
-    value_name="prob"
+    value_name="prob",
 )
 
 melted_df["Case_Outcome"] = melted_df["Outcome"] + " (" + melted_df[0].astype(str) + ")"
@@ -129,17 +127,19 @@ melted_df["Case_Outcome"] = melted_df["Outcome"] + " (" + melted_df[0].astype(st
 heatmap_data = melted_df.pivot(index=1, columns="Case_Outcome", values="prob")
 heatmap_data = heatmap_data.round()
 # Bin the 'prob' values into 5 categories
-bins = [0, 20,40,60,80,100]
-labels = [1,2,3,4,5]
+bins = [0, 20, 40, 60, 80, 100]
+labels = [1, 2, 3, 4, 5]
 label_mapping = {
     1: "very unlikely",
     2: "unlikely",
     3: "about equal",
     4: "likely",
-    5: "very likely"
+    5: "very likely",
 }
 
-heatmap_data_binned = heatmap_data.apply(lambda x: pd.cut(x, bins=bins, labels=labels, include_lowest=True))
+heatmap_data_binned = heatmap_data.apply(
+    lambda x: pd.cut(x, bins=bins, labels=labels, include_lowest=True)
+)
 heatmap_data_binned = heatmap_data_binned.astype(int)
 heatmap_data_binned = heatmap_data_binned.round(0)
 
@@ -147,16 +147,19 @@ mapped_df = heatmap_data_binned.applymap(lambda x: label_mapping.get(x, x))
 
 plt.figure(figsize=(12, 8))
 ax = sns.heatmap(
-    heatmap_data_binned, annot=mapped_df, fmt="s", cmap="Oranges", cbar_kws={"label": "prob"}
+    heatmap_data_binned,
+    annot=mapped_df,
+    fmt="s",
+    cmap="Oranges",
+    cbar_kws={"label": "prob"},
 )
 plt.title("Heatmap of Outcome Probabilities")
 plt.xlabel("Case and Outcome")
 plt.ylabel("Modification Value")
 ax.invert_yaxis()
-plt.xticks(rotation=25, ha='right')
+plt.xticks(rotation=25, ha="right")
 plt.show()
 
 
 # if __name__ == "__main__":
 #     simulate()
-
