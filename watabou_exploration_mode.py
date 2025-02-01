@@ -32,13 +32,14 @@ scale_factor = 2
 
 block_size = 300
 
-covering_alpha = 253
-cover_color = (
-    random.randint(0, 200),
-    random.randint(0, 200),
-    random.randint(0, 200),
-    covering_alpha,
-)
+covering_alpha = 250
+# cover_color = (
+#     random.randint(0, 200),
+#     random.randint(0, 200),
+#     random.randint(0, 200),
+#     covering_alpha,
+# )
+cover_color = (135, 10, 3, covering_alpha)
 full_cover = False
 
 if full_cover == True:
