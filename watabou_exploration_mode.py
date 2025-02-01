@@ -116,7 +116,9 @@ def quit_everything():
 
 pygame.init()
 
-need_new_map = False
+
+# TODO change here to load / generate new map
+need_new_map = True
 if need_new_map == True:
     get_map(map_type)
 
@@ -141,21 +143,23 @@ fog_image = fog_image.filter(ImageFilter.GaussianBlur(10))
 
 fog_texture = pygame.image.fromstring(fog_image.tobytes(), fog_image.size, "RGBA")
 
+covering_alpha = 250
+
 black_layer = pygame.Surface((width, height), pygame.SRCALPHA)
-black_layer.fill((50, 1, 50, 253))
+black_layer.fill((50, 50, 50, covering_alpha))
 
 
-num_cells = 50
+num_cells = 20
 points = np.array(
     [[random.randint(0, width), random.randint(0, height)] for _ in range(num_cells)]
 )
 
 lines = voronoi_lines(points, width, height)
 random_color = (
-    random.randint(0, 255),
-    random.randint(0, 255),
-    random.randint(0, 255),
-    230,
+    random.randint(0, 100),
+    random.randint(0, 100),
+    random.randint(0, 100),
+    covering_alpha,
 )
 for line in lines:
     pygame.draw.line(
