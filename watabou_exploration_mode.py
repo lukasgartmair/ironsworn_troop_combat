@@ -21,8 +21,33 @@ from PIL import Image, ImageFilter
 import urllib
 import random
 
+# TODO change here to load / generate new map
+
+need_new_map = False
+
 map_types = ["city", "realm"]
-map_type = map_types[1]
+map_type = map_types[0]
+
+scale_factor = 2
+
+
+block_size = 300
+
+covering_alpha = 253
+cover_color = (
+    random.randint(0, 200),
+    random.randint(0, 200),
+    random.randint(0, 200),
+    covering_alpha,
+)
+full_cover = False
+
+if full_cover == True:
+    covering_alpha = 255
+
+brush_size = 30
+cursor_radius = brush_size
+cursor_color = (255, 0, 0, 70)
 
 
 def set_up_chrome():
@@ -38,7 +63,7 @@ def set_up_chrome():
 
 def get_realm_url():
     params = {
-        "tags": "land,wetland,large",
+        "tags": "large",
     }
 
     base_url = "https://watabou.github.io/perilous-shores/"
@@ -50,7 +75,7 @@ def get_realm_url():
 def get_city_url():
 
     params = {
-        "size": 35,
+        # "size": 35,
         # "seed": 1512426027,
         # "citadel": 1,
         # "urban_castle": 1,
@@ -59,7 +84,7 @@ def get_city_url():
         # "walls": 1,
         # "shantytown": 1,
         # "coast": 1,
-        "river": random.randint(1, 3),
+        # "river": random.randint(1, 3),
         # "greens": 1,
         # "gates": -1,
         # "sea": 0.8
@@ -97,9 +122,8 @@ def get_map(map_type="city"):
 
 def voronoi_lines(points, width, height):
     lines = []
-    for x in range(0, width, 10):  # Scan through the grid with step
+    for x in range(0, width, 10):
         for y in range(0, height, 10):
-            # Compute the closest point to (x, y)
             distances = np.linalg.norm(points - np.array([x, y]), axis=1)
             closest_point_idx = np.argmin(distances)
             lines.append(
@@ -116,16 +140,15 @@ def quit_everything():
 
 pygame.init()
 
-
-# TODO change here to load / generate new map
-need_new_map = True
 if need_new_map == True:
     get_map(map_type)
 
-scale_factor = 2
+
 pil_image = Image.open("city_map.png")
 width, height = pil_image.size
-width, height = width * scale_factor, height * scale_factor
+width, height = np.round(width * scale_factor).astype(int), np.round(
+    height * scale_factor
+).astype(int)
 upscaled_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
 data = np.flipud(np.rot90(np.array(upscaled_image)))
 
@@ -133,7 +156,6 @@ background = pygame.surfarray.make_surface(data)
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Map Exploration Mode")
 
-block_size = 520
 noise = np.random.randint(
     150, 200, (height // block_size, width // block_size), dtype=np.uint8
 )
@@ -143,7 +165,6 @@ fog_image = fog_image.filter(ImageFilter.GaussianBlur(10))
 
 fog_texture = pygame.image.fromstring(fog_image.tobytes(), fog_image.size, "RGBA")
 
-covering_alpha = 250
 
 black_layer = pygame.Surface((width, height), pygame.SRCALPHA)
 black_layer.fill((50, 50, 50, covering_alpha))
@@ -155,22 +176,12 @@ points = np.array(
 )
 
 lines = voronoi_lines(points, width, height)
-random_color = (
-    random.randint(0, 100),
-    random.randint(0, 100),
-    random.randint(0, 100),
-    covering_alpha,
-)
+
 for line in lines:
     pygame.draw.line(
-        black_layer, random_color, (line[0], line[1]), (line[2], line[3]), 1
+        black_layer, cover_color, (line[0], line[1]), (line[2], line[3]), 1
     )
 black_layer.blit(fog_texture, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-
-
-brush_size = 25
-cursor_radius = brush_size
-cursor_color = (255, 0, 0, 70)
 
 
 revealed_area = pygame.Surface((width, height), pygame.SRCALPHA)
