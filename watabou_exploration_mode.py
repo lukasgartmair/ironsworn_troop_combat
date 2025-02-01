@@ -35,11 +35,12 @@ def get_city_map():
     driver = set_up_chrome()
     try:
         driver.get("https://watabou.github.io/city-generator/")
+
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.TAG_NAME, "canvas"))
         )
 
-        time.sleep(5)
+        time.sleep(3)
         driver.save_screenshot("city_map.png")
 
         print("City map saved as city_map.png")
@@ -63,12 +64,10 @@ if need_new_map == True:
 scale_factor = 2
 pil_image = Image.open("city_map.png")
 width, height = pil_image.size
-width, height = height * scale_factor, width * scale_factor
+width, height = width * scale_factor, height * scale_factor
 upscaled_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
-data = np.flipud(np.array(pil_image))
+data = np.flipud(np.rot90(np.array(upscaled_image)))
 background = pygame.surfarray.make_surface(data)
-
-# width, height = background.get_width(), background.get_height()
 background = pygame.transform.scale(background, (width, height))
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("City Map Viewer")
@@ -77,7 +76,10 @@ black_layer = pygame.Surface((width, height), pygame.SRCALPHA)
 black_layer.fill((0, 0, 0, 255))
 black_layer.set_alpha(255)
 
-brush_size = 20
+brush_size = 25
+cursor_radius = brush_size
+cursor_color = (0, 0, 255, 70)
+
 
 revealed_area = pygame.Surface((width, height), pygame.SRCALPHA)
 revealed_area.set_colorkey((0, 0, 0))
@@ -92,8 +94,19 @@ while running:
         elif event.type == pygame.MOUSEMOTION:
             if pygame.mouse.get_pressed()[0]:
                 pygame.draw.circle(black_layer, (100, 0, 0, 0), event.pos, brush_size)
+
     screen.blit(background, (0, 0))
+
     screen.blit(black_layer, (0, 0))
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    cursor_surface = pygame.Surface(
+        (cursor_radius * 2, cursor_radius * 2), pygame.SRCALPHA
+    )
+    pygame.draw.circle(
+        cursor_surface, cursor_color, (cursor_radius, cursor_radius), cursor_radius
+    )
+    screen.blit(cursor_surface, (mouse_x - cursor_radius, mouse_y - cursor_radius))
+
     pygame.display.flip()
 
 pygame.quit()
