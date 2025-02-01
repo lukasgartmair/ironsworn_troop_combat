@@ -78,7 +78,7 @@ def quit_everything():
 
 pygame.init()
 
-need_new_map = False
+need_new_map = True
 if need_new_map == True:
     get_city_map()
 
