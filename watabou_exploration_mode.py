@@ -23,13 +23,12 @@ import random
 
 # TODO change here to load / generate new map
 
-need_new_map = False
+need_new_map = True
 
 map_types = ["city", "realm"]
 map_type = map_types[0]
 
 scale_factor = 2
-
 
 block_size = 300
 
