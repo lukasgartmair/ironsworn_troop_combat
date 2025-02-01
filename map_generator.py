@@ -18,34 +18,39 @@ from scipy.stats import qmc
 
 f = Faker()
 
+
 def add_random_points(map_grid, x_range, y_range, n=2):
-    
-    n = random.randint(2,10)
-    
+
+    n = random.randint(2, 10)
+
     num_points = 100
     sampler = qmc.Halton(d=2, scramble=False)
     points = sampler.random(num_points)
-    
+
     points = np.floor(points * map_size).astype(int)
-    
+
     num_points = 100
     sampler = qmc.Halton(d=2, scramble=False)
     points = sampler.random(num_points)
     points = np.floor(points * map_size).astype(int)
     mask2 = map_grid[points[:, 0], points[:, 1]] != terrain_mapping["Water"]
     valid_points = points[mask2]
-    
+
     n = random.randint(2, 10)
     if valid_points.shape[0] < n:
-        raise ValueError(f"Not enough valid points found. Only {valid_points.shape[0]} valid points.")
+        raise ValueError(
+            f"Not enough valid points found. Only {valid_points.shape[0]} valid points."
+        )
 
+    random_rows = valid_points[
+        np.random.choice(valid_points.shape[0], n, replace=False)
+    ]
 
-    random_rows = valid_points[np.random.choice(valid_points.shape[0], n, replace=False)]
-    
-    for x,y in random_rows:
+    for x, y in random_rows:
         name = f.city()
         plt.scatter(x, y, label=name)
-        plt.text(x, y, name, fontsize=12, ha='right', va='bottom')
+        plt.text(x, y, name, fontsize=12, ha="right", va="bottom")
+
 
 terrain_strategies = {
     # "Deep Water": {"water_threshold": 0.2, "mountain_threshold": None},
