@@ -21,6 +21,9 @@ from PIL import Image
 import urllib
 import random
 
+map_types = ["city","realm"]
+map_type = map_types[1]
+
 def set_up_chrome():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
@@ -31,9 +34,18 @@ def set_up_chrome():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
+def get_realm_url():
+    params = {
+        "tags": "land,wetland,large",
+    }
 
-def get_city_map():
-    driver = set_up_chrome()
+    base_url = "https://watabou.github.io/perilous-shores/"
+    query_string = urllib.parse.urlencode(params)
+    full_url = f"{base_url}?{query_string}"
+    return full_url
+
+def get_city_url():
+
     params = {
     "size": 35,
     # "seed": 1512426027,
@@ -48,12 +60,22 @@ def get_city_map():
     # "greens": 1,
     # "gates": -1,
     # "sea": 0.8
-}
+    }
     
     base_url = "https://watabou.github.io/city-generator/"
     query_string = urllib.parse.urlencode(params)
     full_url = f"{base_url}?{query_string}"
+    
+    
+    return full_url
 
+def get_map(map_type="city"):
+    driver = set_up_chrome()
+    if map_type=="city":
+        full_url = get_city_url()
+    elif map_type=="realm":
+        full_url = get_realm_url()
+        
     try:
         driver.get(full_url)
 
@@ -80,7 +102,7 @@ pygame.init()
 
 need_new_map = True
 if need_new_map == True:
-    get_city_map()
+    get_map(map_type)
 
 scale_factor = 2
 pil_image = Image.open("city_map.png")
