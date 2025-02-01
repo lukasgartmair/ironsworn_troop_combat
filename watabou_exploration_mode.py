@@ -17,12 +17,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 import urllib
 import random
 
-map_types = ["city","realm"]
+map_types = ["city", "realm"]
 map_type = map_types[1]
+
 
 def set_up_chrome():
     chrome_options = Options()
@@ -34,6 +35,7 @@ def set_up_chrome():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
+
 def get_realm_url():
     params = {
         "tags": "land,wetland,large",
@@ -44,38 +46,39 @@ def get_realm_url():
     full_url = f"{base_url}?{query_string}"
     return full_url
 
+
 def get_city_url():
 
     params = {
-    "size": 35,
-    # "seed": 1512426027,
-    # "citadel": 1,
-    # "urban_castle": 1,
-    # "plaza": 1,
-    # "temple": 1,
-    # "walls": 1,
-    # "shantytown": 1,
-    # "coast": 1,
-    "river": random.randint(1,3),
-    # "greens": 1,
-    # "gates": -1,
-    # "sea": 0.8
+        "size": 35,
+        # "seed": 1512426027,
+        # "citadel": 1,
+        # "urban_castle": 1,
+        # "plaza": 1,
+        # "temple": 1,
+        # "walls": 1,
+        # "shantytown": 1,
+        # "coast": 1,
+        "river": random.randint(1, 3),
+        # "greens": 1,
+        # "gates": -1,
+        # "sea": 0.8
     }
-    
+
     base_url = "https://watabou.github.io/city-generator/"
     query_string = urllib.parse.urlencode(params)
     full_url = f"{base_url}?{query_string}"
-    
-    
+
     return full_url
+
 
 def get_map(map_type="city"):
     driver = set_up_chrome()
-    if map_type=="city":
+    if map_type == "city":
         full_url = get_city_url()
-    elif map_type=="realm":
+    elif map_type == "realm":
         full_url = get_realm_url()
-        
+
     try:
         driver.get(full_url)
 
@@ -92,6 +95,19 @@ def get_map(map_type="city"):
         driver.quit()
 
 
+def voronoi_lines(points, width, height):
+    lines = []
+    for x in range(0, width, 10):  # Scan through the grid with step
+        for y in range(0, height, 10):
+            # Compute the closest point to (x, y)
+            distances = np.linalg.norm(points - np.array([x, y]), axis=1)
+            closest_point_idx = np.argmin(distances)
+            lines.append(
+                (x, y, points[closest_point_idx][0], points[closest_point_idx][1])
+            )
+    return lines
+
+
 def quit_everything():
     pygame.display.quit()
     pygame.quit()
@@ -100,7 +116,7 @@ def quit_everything():
 
 pygame.init()
 
-need_new_map = True
+need_new_map = False
 if need_new_map == True:
     get_map(map_type)
 
@@ -110,17 +126,47 @@ width, height = pil_image.size
 width, height = width * scale_factor, height * scale_factor
 upscaled_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
 data = np.flipud(np.rot90(np.array(upscaled_image)))
+
 background = pygame.surfarray.make_surface(data)
 screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("City Map Viewer")
+pygame.display.set_caption("Map Exploration Mode")
+
+block_size = 520
+noise = np.random.randint(
+    150, 200, (height // block_size, width // block_size), dtype=np.uint8
+)
+
+fog_image = Image.fromarray(noise, mode="L").convert("RGBA")
+fog_image = fog_image.filter(ImageFilter.GaussianBlur(10))
+
+fog_texture = pygame.image.fromstring(fog_image.tobytes(), fog_image.size, "RGBA")
 
 black_layer = pygame.Surface((width, height), pygame.SRCALPHA)
-black_layer.fill((0, 0, 0, 255))
-black_layer.set_alpha(255)
+black_layer.fill((50, 1, 50, 253))
+
+
+num_cells = 50
+points = np.array(
+    [[random.randint(0, width), random.randint(0, height)] for _ in range(num_cells)]
+)
+
+lines = voronoi_lines(points, width, height)
+random_color = (
+    random.randint(0, 255),
+    random.randint(0, 255),
+    random.randint(0, 255),
+    230,
+)
+for line in lines:
+    pygame.draw.line(
+        black_layer, random_color, (line[0], line[1]), (line[2], line[3]), 1
+    )
+black_layer.blit(fog_texture, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
 
 brush_size = 25
 cursor_radius = brush_size
-cursor_color = (0, 0, 255, 70)
+cursor_color = (255, 0, 0, 70)
 
 
 revealed_area = pygame.Surface((width, height), pygame.SRCALPHA)
