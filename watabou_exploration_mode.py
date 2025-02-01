@@ -78,7 +78,7 @@ def quit_everything():
 
 pygame.init()
 
-need_new_map = True
+need_new_map = False
 if need_new_map == True:
     get_city_map()
 
@@ -89,7 +89,6 @@ width, height = width * scale_factor, height * scale_factor
 upscaled_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
 data = np.flipud(np.rot90(np.array(upscaled_image)))
 background = pygame.surfarray.make_surface(data)
-background = pygame.transform.scale(background, (width, height))
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("City Map Viewer")
 
