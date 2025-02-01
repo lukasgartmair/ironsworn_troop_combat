@@ -18,7 +18,8 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import numpy as np
 from PIL import Image
-
+import urllib
+import random
 
 def set_up_chrome():
     chrome_options = Options()
@@ -33,8 +34,28 @@ def set_up_chrome():
 
 def get_city_map():
     driver = set_up_chrome()
+    params = {
+    "size": 35,
+    # "seed": 1512426027,
+    # "citadel": 1,
+    # "urban_castle": 1,
+    # "plaza": 1,
+    # "temple": 1,
+    # "walls": 1,
+    # "shantytown": 1,
+    # "coast": 1,
+    "river": random.randint(1,3),
+    # "greens": 1,
+    # "gates": -1,
+    # "sea": 0.8
+}
+    
+    base_url = "https://watabou.github.io/city-generator/"
+    query_string = urllib.parse.urlencode(params)
+    full_url = f"{base_url}?{query_string}"
+
     try:
-        driver.get("https://watabou.github.io/city-generator/")
+        driver.get(full_url)
 
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.TAG_NAME, "canvas"))
@@ -57,7 +78,7 @@ def quit_everything():
 
 pygame.init()
 
-need_new_map = False
+need_new_map = True
 if need_new_map == True:
     get_city_map()
 
