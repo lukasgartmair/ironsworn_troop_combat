@@ -23,7 +23,7 @@ import random
 
 # TODO change here to load / generate new map
 
-need_new_map = True
+need_new_map = False
 
 map_types = ["city", "realm"]
 map_type = map_types[0]

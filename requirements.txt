@@ -1,0 +1,6 @@
+pygame==2.6.0
+selenium==4.28.1
+webdriver-manager==4.0.2
+Pillow==10.4.0
+numpy
+
