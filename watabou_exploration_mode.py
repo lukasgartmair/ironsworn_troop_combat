@@ -32,6 +32,8 @@ scale_factor = 2
 
 block_size = 300
 
+invert_colors = True
+
 covering_alpha = 250
 # cover_color = (
 #     random.randint(0, 200),
@@ -162,7 +164,8 @@ width, height = np.round(width * scale_factor).astype(int), np.round(
 ).astype(int)
 upscaled_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
 data = np.flipud(np.rot90(np.array(upscaled_image)))
-data = 255 - data
+if invert_colors == True:
+    data = 255 - data
 
 background = pygame.surfarray.make_surface(data)
 screen = pygame.display.set_mode((width, height))
