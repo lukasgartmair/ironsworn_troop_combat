@@ -23,10 +23,10 @@ import random
 
 # TODO change here to load / generate new map
 
-create_new_map = True
+create_new_map = False
 
 map_types = ["city", "realm", "dungeon"]
-map_type = "city"
+map_type = "dungeon"
 
 scale_factor = 2
 
@@ -162,6 +162,7 @@ width, height = np.round(width * scale_factor).astype(int), np.round(
 ).astype(int)
 upscaled_image = pil_image.resize((width, height), Image.Resampling.LANCZOS)
 data = np.flipud(np.rot90(np.array(upscaled_image)))
+data = 255 - data
 
 background = pygame.surfarray.make_surface(data)
 screen = pygame.display.set_mode((width, height))
