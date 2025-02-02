@@ -117,15 +117,15 @@ def get_map(map_type="city"):
 
     try:
         driver.get(full_url)
-        waiting_time_sec = 2
+        waiting_time_sec = 4
         WebDriverWait(driver, waiting_time_sec).until(
             EC.presence_of_element_located((By.TAG_NAME, "canvas"))
         )
 
         time.sleep(waiting_time_sec)
-        driver.save_screenshot("city_map.png")
+        driver.save_screenshot("map.png")
 
-        print("City map saved as city_map.png")
+        print("City map saved as map.png")
 
     finally:
         driver.quit()
@@ -155,7 +155,7 @@ if create_new_map == True:
     get_map(map_type)
 
 
-pil_image = Image.open("city_map.png")
+pil_image = Image.open("map.png")
 width, height = pil_image.size
 width, height = np.round(width * scale_factor).astype(int), np.round(
     height * scale_factor
