@@ -23,10 +23,10 @@ import random
 
 # TODO change here to load / generate new map
 
-need_new_map = False
+create_new_map = True
 
-map_types = ["city", "realm"]
-map_type = map_types[0]
+map_types = ["city", "realm", "dungeon"]
+map_type = "city"
 
 scale_factor = 2
 
@@ -60,6 +60,13 @@ def set_up_chrome():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
+def get_dungeon_url():
+
+    params = {}
+    base_url = "https://watabou.github.io/one-page-dungeon/"
+    query_string = urllib.parse.urlencode(params)
+    full_url = f"{base_url}?{query_string}"
+    return full_url
 
 def get_realm_url():
     params = {
@@ -103,15 +110,19 @@ def get_map(map_type="city"):
         full_url = get_city_url()
     elif map_type == "realm":
         full_url = get_realm_url()
+    elif map_type == "dungeon":
+        full_url = get_dungeon_url()
+    else:
+        full_url = get_city_url()
 
     try:
         driver.get(full_url)
-
-        WebDriverWait(driver, 10).until(
+        waiting_time_sec = 2
+        WebDriverWait(driver, waiting_time_sec).until(
             EC.presence_of_element_located((By.TAG_NAME, "canvas"))
         )
 
-        time.sleep(3)
+        time.sleep(waiting_time_sec)
         driver.save_screenshot("city_map.png")
 
         print("City map saved as city_map.png")
@@ -140,7 +151,7 @@ def quit_everything():
 
 pygame.init()
 
-if need_new_map == True:
+if create_new_map == True:
     get_map(map_type)
 
 
