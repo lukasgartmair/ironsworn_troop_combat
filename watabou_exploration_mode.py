@@ -23,10 +23,10 @@ import random
 
 # TODO change here to load / generate new map
 
-create_new_map = False
+create_new_map = True
 
 map_types = ["city", "realm", "dungeon"]
-map_type = "dungeon"
+map_type = "city"
 
 scale_factor = 2
 
@@ -62,13 +62,14 @@ def set_up_chrome():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
+
 def get_dungeon_url():
 
     params = {}
     base_url = "https://watabou.github.io/one-page-dungeon/"
     query_string = urllib.parse.urlencode(params)
-    full_url = f"{base_url}?{query_string}"
-    return full_url
+    return base_url, query_string
+
 
 def get_realm_url():
     params = {
@@ -77,8 +78,7 @@ def get_realm_url():
 
     base_url = "https://watabou.github.io/perilous-shores/"
     query_string = urllib.parse.urlencode(params)
-    full_url = f"{base_url}?{query_string}"
-    return full_url
+    return base_url, query_string
 
 
 def get_city_url():
@@ -101,21 +101,22 @@ def get_city_url():
 
     base_url = "https://watabou.github.io/city-generator/"
     query_string = urllib.parse.urlencode(params)
-    full_url = f"{base_url}?{query_string}"
 
-    return full_url
+    return base_url, query_string
 
 
 def get_map(map_type="city"):
     driver = set_up_chrome()
     if map_type == "city":
-        full_url = get_city_url()
+        base_url, query_string = get_city_url()
     elif map_type == "realm":
-        full_url = get_realm_url()
+        base_url, query_string = get_realm_url()
     elif map_type == "dungeon":
-        full_url = get_dungeon_url()
+        base_url, query_string = get_dungeon_url()
     else:
-        full_url = get_city_url()
+        base_url, query_string = get_city_url()
+
+    full_url = f"{base_url}?{query_string}"
 
     try:
         driver.get(full_url)
